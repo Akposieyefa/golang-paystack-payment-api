@@ -9,7 +9,8 @@ import (
 )
 
 var apiKey = pkg.LoadEnv("PAYSTACK_SECRET_KEY")
-var callBackUrl = pkg.LoadEnv("PAYSTACK_CALLBACK_UR")
+var apiUrl = pkg.LoadEnv("PAYSTACK_URL")
+var callBackUrl = pkg.LoadEnv("PAYSTACK_CALLBACK_URL")
 
 // initialize paystack payment service
 func InitializeTransaction(email string, amount int, reference string) map[string]interface{} {
@@ -29,8 +30,7 @@ func InitializeTransaction(email string, amount int, reference string) map[strin
 		}
 	}
 
-	url := "https://api.paystack.co/transaction/initialize"
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest("POST", apiUrl+"/transaction/initialize", bytes.NewBuffer(jsonData))
 	if err != nil {
 		return map[string]interface{}{
 			"message": err.Error(),
@@ -68,10 +68,12 @@ func InitializeTransaction(email string, amount int, reference string) map[strin
 // verify transaction service
 func VerifyTransaction(reference string) map[string]interface{} {
 
-	url := "https://api.paystack.co/transaction/verify/" + reference
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", apiUrl+"/transaction/verify/"+reference, nil)
 	if err != nil {
-		panic(err)
+		return map[string]interface{}{
+			"message": err.Error(),
+			"status":  false,
+		}
 	}
 	req.Header.Set("Authorization", "Bearer "+apiKey)
 	client := &http.Client{}
