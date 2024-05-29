@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"time"
 
+	gohandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -39,13 +40,17 @@ func Router() {
 	apiRoutes.HandleFunc("/transactions/create", handlers.CreateTransaction).Methods("POST")
 	apiRoutes.HandleFunc("/transactions/verify/{reference}", handlers.VerifyTransaction).Methods("GET")
 
-	s := &http.Server{
+	//cors
+	ch := gohandlers.CORS(gohandlers.AllowedOrigins([]string{"http://localhost:3000"}))
+
+	srv := &http.Server{
 		Addr:           port,
-		Handler:        router,
+		Handler:        ch(router),
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 		IdleTimeout:    120 * time.Second,
 	}
-	log.Fatal(s.ListenAndServe())
+	log.Fatal(srv.ListenAndServe())
+
 }
